@@ -12,7 +12,7 @@ Production-oriented platform for student exam preparation where admins create/pu
 - `api-gateway`: single secured entrypoint and route proxy
 - `frontend`: working dashboard UI (admin + student journey)
 
-## Feature Flow (from your diagram)
+## Feature Flow
 
 1. User authentication
 2. User profile stores age/stream/subjects/category
@@ -58,25 +58,3 @@ Production-oriented platform for student exam preparation where admins create/pu
 ```bash
 cp .env.example .env
 docker compose up --build
-```
-
-- API Gateway: `http://localhost:8080`
-- Frontend: `http://localhost:5173`
-
-## Production Next Steps
-
-- Move internal service auth to signed service-to-service tokens
-- Add Redis caching for content and ranking endpoints
-- Add async notification service via RabbitMQ/Kafka
-- Add audit logs and observability (OpenTelemetry)
-- Add Kubernetes manifests/Helm + CI/CD
-
-## Frontend Only (without Docker)
-
-If Docker is unavailable, you can still preview the frontend UI:
-
-```bash
-python3 -m http.server 8000 --directory frontend
-```
-
-Then open `http://localhost:8000`. API buttons require backend/gateway running at `http://localhost:8080`.

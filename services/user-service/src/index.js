@@ -28,7 +28,7 @@ const profileSchema = new mongoose.Schema(
 const UserProfile = mongoose.model('UserProfile', profileSchema);
 
 function auth(req, res, next) {
-  const token = req.headers.authorization?.replace('Bearer ', '');
+  const token = req.headersauthorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'Missing token' });
   try {
     req.user = jwt.verify(token, JWT_SECRET);
@@ -45,7 +45,10 @@ function evaluateEligibility(profile) {
     UPSC: profile.age >= 21 && !!profile.qualification
   };
 
-  const eligibleExams = Object.entries(checks).filter(([, ok]) => ok).map(([exam]) => exam);
+  const eligibleExams = Object.entries(checks)
+    .filter(([, ok]) => ok)
+    .map(([exam]) => exam);
+
   const ineligibleReasons = [];
   if (!checks.JEE) ineligibleReasons.push('JEE requires age 16+ and science/PCM stream');
   if (!checks.NEET) ineligibleReasons.push('NEET requires age 17+ and science/PCB stream');

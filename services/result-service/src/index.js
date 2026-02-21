@@ -38,11 +38,13 @@ function auth(req, res, next) {
 
 app.post('/results/internal', async (req, res) => {
   const { userId, mockTestId, examType, score, timeTaken, accuracy } = req.body;
+
   const result = await Result.findOneAndUpdate(
     { userId, mockTestId },
     { userId, mockTestId, examType, score, timeTaken, accuracy },
     { upsert: true, new: true }
   );
+
   return res.status(201).json(result);
 });
 
@@ -53,15 +55,27 @@ app.get('/results/me', auth, async (req, res) => {
 
 app.get('/results/progress/overview', auth, async (req, res) => {
   const results = await Result.find({ userId: req.user.sub }).sort({ createdAt: -1 });
-  if (!results.length) return res.json({ attempts: 0, avgScore: 0, avgAccuracy: 0, strengths: [], weakAreas: [] });
+  if (!results.length) {
+    return res.json({
+      attempts: 0,
+      avgScore: 0,
+      avgAccuracy: 0,
+      strengths: [],
+      weakAreas: []
+    });
+  }
 
   const avgScore = Math.round(results.reduce((sum, r) => sum + r.score, 0) / results.length);
   const avgAccuracy = Math.round(results.reduce((sum, r) => sum + (r.accuracy || 0), 0) / results.length);
 
   const strengths = [];
   const weakAreas = [];
-  if (avgAccuracy >= 75) strengths.push('High overall accuracy'); else weakAreas.push('Need higher accuracy in concept revision');
-  if (avgScore >= 120) strengths.push('Strong scoring pace'); else weakAreas.push('Improve speed + precision in mock attempts');
+
+  if (avgAccuracy >= 75) strengths.push('High overall accuracy');
+  else weakAreas.push('Need higher accuracy in concept revision');
+
+  if (avgScore >= 120) strengths.push('Strong scoring pace');
+  else weakAreas.push('Improve speed + precision in mock attempts');
 
   return res.json({ attempts: results.length, avgScore, avgAccuracy, strengths, weakAreas });
 });
