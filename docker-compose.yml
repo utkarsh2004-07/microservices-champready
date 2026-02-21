@@ -1,0 +1,81 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+
+  auth-service:
+    build: ./services/auth-service
+    environment:
+      PORT: 3001
+      JWT_SECRET: ${JWT_SECRET}
+      MONGO_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/${AUTH_DB}?authSource=admin
+    depends_on:
+      - mongo
+
+  user-service:
+    build: ./services/user-service
+    environment:
+      PORT: 3002
+      JWT_SECRET: ${JWT_SECRET}
+      MONGO_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/${USER_DB}?authSource=admin
+    depends_on:
+      - mongo
+
+  mocktest-service:
+    build: ./services/mocktest-service
+    environment:
+      PORT: 3003
+      JWT_SECRET: ${JWT_SECRET}
+      MONGO_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/${MOCKTEST_DB}?authSource=admin
+      RESULT_SERVICE_URL: http://result-service:3004
+    depends_on:
+      - mongo
+
+  result-service:
+    build: ./services/result-service
+    environment:
+      PORT: 3004
+      JWT_SECRET: ${JWT_SECRET}
+      MONGO_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/${RESULT_DB}?authSource=admin
+    depends_on:
+      - mongo
+
+  content-service:
+    build: ./services/content-service
+    environment:
+      PORT: 3005
+      JWT_SECRET: ${JWT_SECRET}
+      MONGO_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/${CONTENT_DB}?authSource=admin
+    depends_on:
+      - mongo
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      JWT_SECRET: ${JWT_SECRET}
+      AUTH_SERVICE_URL: http://auth-service:3001
+      USER_SERVICE_URL: http://user-service:3002
+      MOCKTEST_SERVICE_URL: http://mocktest-service:3003
+      RESULT_SERVICE_URL: http://result-service:3004
+      CONTENT_SERVICE_URL: http://content-service:3005
+    depends_on:
+      - auth-service
+      - user-service
+      - mocktest-service
+      - result-service
+      - content-service
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - api-gateway
