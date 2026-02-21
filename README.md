@@ -1,72 +1,62 @@
 # ChampReady Microservices Platform
 
-Production-oriented platform for student exam preparation where admins create/publish mock tests and students access exam-specific learning + analysis dashboards.
+Production-oriented starter for a student exam preparation platform where admins create/publish mock tests and students attempt only exam-specific tests.
 
 ## Architecture
 
-- `services/auth-service`: authentication, JWT, roles, premium flag
-- `services/user-service`: profile, selected exam, eligibility engine
-- `services/mocktest-service`: admin mock management + student submissions
-- `services/result-service`: scores, ranking, progress analysis
-- `services/content-service`: notes/syllabus/PYQ/YouTube/notifications content buckets
-- `api-gateway`: single secured entrypoint and route proxy
-- `frontend`: working dashboard UI (admin + student journey)
+- `services/auth-service`: authentication, JWT issuance, role handling
+- `services/user-service`: student profile + selected exam
+- `services/mocktest-service`: mock test creation/publishing/submission
+- `services/result-service`: results retrieval and ranking
+- `api-gateway`: single entrypoint, token validation, routing to services
+- `frontend`: placeholder for Next.js/React UI
 
-## Feature Flow (from your diagram)
+## Core Features Included
 
-1. User authentication
-2. User profile stores age/stream/subjects/category
-3. Eligibility engine returns eligible and non-eligible exam explanations
-4. Student selects exam and enters exam dashboard
-5. Dashboard modules:
-   - Notes, PYQ, syllabus with access control
-   - Mock tests and result analytics
-   - AI-ready layer placeholders: roadmap/timetable/doubt/progress
-6. Progress tracker classifies strengths + weak areas from result data
+- Syllabus/notices-ready data model extension points
+- Eligibility-ready user profile fields
+- Mock tests (admin create/publish + student attempt)
+- Notes/content-ready service integration points
+- Exam date/notification-ready hooks
 
-## Core APIs
+## Quick Start
 
-### Auth Service
+1. Copy envs:
+   ```bash
+   cp .env.example .env
+   ```
+2. Run:
+   ```bash
+   docker compose up --build
+   ```
+3. API Gateway available at `http://localhost:8080`
+
+## API Summary
+
+### Auth
 - `POST /auth/register`
 - `POST /auth/login`
 - `GET /auth/me`
 
-### User Service
+### User
 - `GET /users/me`
-- `PUT /users/profile`
-- `POST /users/eligibility/check`
 - `PUT /users/update-exam`
 
-### Mock Test Service
+### Mock Tests
 - `POST /admin/mock-tests`
 - `POST /admin/mock-tests/:id/publish`
 - `GET /mock-tests?exam=JEE`
 - `GET /mock-tests/:id`
 - `POST /mock-tests/:id/submit`
 
-### Result Service
+### Results
 - `GET /results/me`
-- `GET /results/progress/overview`
 - `GET /results/:mockTestId/rank`
 
-### Content Service
-- `POST /admin/content`
-- `GET /content?kind=notes`
+## Production Hardening Next Steps
 
-## Quick Start
-
-```bash
-cp .env.example .env
-docker compose up --build
-```
-
-- API Gateway: `http://localhost:8080`
-- Frontend: `http://localhost:5173`
-
-## Production Next Steps
-
-- Move internal service auth to signed service-to-service tokens
-- Add Redis caching for content and ranking endpoints
-- Add async notification service via RabbitMQ/Kafka
-- Add audit logs and observability (OpenTelemetry)
-- Add Kubernetes manifests/Helm + CI/CD
+- Add message queue (RabbitMQ/Kafka) for async notifications
+- Add rate limiting + WAF policies at gateway
+- Add CI pipeline, OpenTelemetry, SLO dashboards
+- Add Redis caching for hot mock tests and rank lists
+- Add Kubernetes manifests/Helm

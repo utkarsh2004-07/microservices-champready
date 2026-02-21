@@ -16,10 +16,6 @@ const profileSchema = new mongoose.Schema(
     email: String,
     exam: { type: String, enum: ['JEE', 'NEET', 'UPSC', null], default: null },
     qualification: String,
-    age: Number,
-    stream: String,
-    subjects: [String],
-    category: String,
     eligibilityVerified: { type: Boolean, default: false }
   },
   { timestamps: true }
@@ -36,22 +32,6 @@ function auth(req, res, next) {
   } catch (_err) {
     return res.status(401).json({ message: 'Invalid token' });
   }
-}
-
-function evaluateEligibility(profile) {
-  const checks = {
-    JEE: profile.age >= 16 && ['science', 'pcm'].includes((profile.stream || '').toLowerCase()),
-    NEET: profile.age >= 17 && ['science', 'pcb'].includes((profile.stream || '').toLowerCase()),
-    UPSC: profile.age >= 21 && !!profile.qualification
-  };
-
-  const eligibleExams = Object.entries(checks).filter(([, ok]) => ok).map(([exam]) => exam);
-  const ineligibleReasons = [];
-  if (!checks.JEE) ineligibleReasons.push('JEE requires age 16+ and science/PCM stream');
-  if (!checks.NEET) ineligibleReasons.push('NEET requires age 17+ and science/PCB stream');
-  if (!checks.UPSC) ineligibleReasons.push('UPSC requires age 21+ and graduation qualification');
-
-  return { eligibleExams, ineligibleReasons };
 }
 
 app.get('/users/me', auth, async (req, res) => {
@@ -71,23 +51,6 @@ app.get('/users/me', auth, async (req, res) => {
   return res.json(profile);
 });
 
-app.put('/users/profile', auth, async (req, res) => {
-  const { age, stream, subjects, category, qualification, name } = req.body;
-  const profile = await UserProfile.findOneAndUpdate(
-    { authUserId: req.user.sub },
-    { $set: { age, stream, subjects, category, qualification, name, email: req.user.email } },
-    { new: true, upsert: true }
-  );
-  return res.json(profile);
-});
-
-app.post('/users/eligibility/check', auth, async (req, res) => {
-  const profile = await UserProfile.findOne({ authUserId: req.user.sub });
-  if (!profile) return res.status(404).json({ message: 'Profile not found' });
-  const result = evaluateEligibility(profile);
-  return res.json(result);
-});
-
 app.put('/users/update-exam', auth, async (req, res) => {
   const { exam } = req.body;
   if (!['JEE', 'NEET', 'UPSC'].includes(exam)) {
@@ -96,7 +59,7 @@ app.put('/users/update-exam', auth, async (req, res) => {
 
   const profile = await UserProfile.findOneAndUpdate(
     { authUserId: req.user.sub },
-    { $set: { exam, email: req.user.email, eligibilityVerified: true } },
+    { $set: { exam, email: req.user.email } },
     { new: true, upsert: true }
   );
 

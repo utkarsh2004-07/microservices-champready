@@ -13,8 +13,7 @@ const {
   AUTH_SERVICE_URL,
   USER_SERVICE_URL,
   MOCKTEST_SERVICE_URL,
-  RESULT_SERVICE_URL,
-  CONTENT_SERVICE_URL
+  RESULT_SERVICE_URL
 } = process.env;
 
 function authenticate(req, res, next) {
@@ -33,7 +32,6 @@ app.use('/users', authenticate, proxy(USER_SERVICE_URL));
 app.use('/admin', authenticate, proxy(MOCKTEST_SERVICE_URL));
 app.use('/mock-tests', authenticate, proxy(MOCKTEST_SERVICE_URL));
 app.use('/results', authenticate, proxy(RESULT_SERVICE_URL));
-app.use('/content', authenticate, proxy(CONTENT_SERVICE_URL));
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'api-gateway' });

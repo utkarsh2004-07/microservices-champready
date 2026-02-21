@@ -51,21 +51,6 @@ app.get('/results/me', auth, async (req, res) => {
   return res.json(results);
 });
 
-app.get('/results/progress/overview', auth, async (req, res) => {
-  const results = await Result.find({ userId: req.user.sub }).sort({ createdAt: -1 });
-  if (!results.length) return res.json({ attempts: 0, avgScore: 0, avgAccuracy: 0, strengths: [], weakAreas: [] });
-
-  const avgScore = Math.round(results.reduce((sum, r) => sum + r.score, 0) / results.length);
-  const avgAccuracy = Math.round(results.reduce((sum, r) => sum + (r.accuracy || 0), 0) / results.length);
-
-  const strengths = [];
-  const weakAreas = [];
-  if (avgAccuracy >= 75) strengths.push('High overall accuracy'); else weakAreas.push('Need higher accuracy in concept revision');
-  if (avgScore >= 120) strengths.push('Strong scoring pace'); else weakAreas.push('Improve speed + precision in mock attempts');
-
-  return res.json({ attempts: results.length, avgScore, avgAccuracy, strengths, weakAreas });
-});
-
 app.get('/results/:mockTestId/rank', auth, async (req, res) => {
   const list = await Result.find({ mockTestId: req.params.mockTestId }).sort({ score: -1, timeTaken: 1 });
   const rank = list.findIndex((item) => item.userId === req.user.sub) + 1;

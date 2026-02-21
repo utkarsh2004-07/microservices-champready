@@ -1,9 +1,7 @@
-# Frontend
+# Frontend Placeholder
 
-Static production-style dashboard served by Nginx.
+Recommended stack: Next.js + Tailwind CSS.
 
-Includes:
-- Auth/register/login
-- Profile + eligibility check
-- Admin mock test create/publish
-- Student mock/content/result/progress views
+Views to build:
+- Admin dashboard: create mock tests, add questions, publish
+- Student dashboard: choose exam, list tests, attempt test, view results/rank
