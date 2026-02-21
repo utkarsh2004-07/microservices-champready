@@ -45,6 +45,15 @@ services:
     depends_on:
       - mongo
 
+  content-service:
+    build: ./services/content-service
+    environment:
+      PORT: 3005
+      JWT_SECRET: ${JWT_SECRET}
+      MONGO_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/${CONTENT_DB}?authSource=admin
+    depends_on:
+      - mongo
+
   api-gateway:
     build: ./api-gateway
     ports:
@@ -56,8 +65,17 @@ services:
       USER_SERVICE_URL: http://user-service:3002
       MOCKTEST_SERVICE_URL: http://mocktest-service:3003
       RESULT_SERVICE_URL: http://result-service:3004
+      CONTENT_SERVICE_URL: http://content-service:3005
     depends_on:
       - auth-service
       - user-service
       - mocktest-service
       - result-service
+      - content-service
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - api-gateway
